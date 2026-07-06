@@ -217,6 +217,8 @@
   }
   .branch-box:hover{ border-color:var(--lime); background:rgba(115,190,28,.06); }
   .branch-box .num{ display:block; color:var(--dim); font-size:9.5px; margin-bottom:6px; }
+  .branch-box .url{ display:block; color:var(--lime); font-size:9.5px; margin-top:8px; padding-top:8px; border-top:1px solid var(--line); letter-spacing:.02em; }
+  .tree-note{ margin:18px auto 0; max-width:56ch; font-size:13px; color:var(--dim); font-family:'IBM Plex Mono',monospace; letter-spacing:.02em; line-height:1.6; }
   .phase2-label{ margin:40px 0 16px; font-family:'IBM Plex Mono',monospace; font-size:10.5px; color:var(--dim); letter-spacing:.14em; text-transform:uppercase; }
   .phase2-row{ display:flex; justify-content:center; gap:14px; flex-wrap:wrap; }
   .phase2-row .branch-box{ border-style:dashed; color:var(--muted); }
@@ -297,6 +299,10 @@
       <div class="cover-cell"><span class="k">Generación</span><span class="v">3ª en actividad</span></div>
       <div class="cover-cell"><span class="k">Sector</span><span class="v">Industrial / B2B</span></div>
       <div class="cover-cell"><span class="k">Documento</span><span class="v">Auditoría · Rev. A</span></div>
+    </div>
+    <div class="flag reveal" style="margin-top:36px; max-width:640px;">
+      <span class="tg">Nota</span>
+      <p>Este documento es el puntapié inicial, no una versión cerrada. Es la base para alinear criterios con VOGTSA — todo lo que sigue (arquitectura, textos, tono, palabras clave) puede ajustarse a medida que avancemos juntos.</p>
     </div>
   </div>
   <div class="scrolldown"><span>Scroll</span><div class="bar"><i></i></div></div>
@@ -415,19 +421,20 @@
     <p class="reveal" style="margin-top:18px;max-width:70ch;">Separamos Fabricación, Reparación y Representaciones porque son líneas de negocio con público y urgencia distinta. Combinarlas en una sola sección de "Productos y Servicios" diluye la propuesta de cada una.</p>
     <div class="tree-wrap reveal">
       <div class="root-box">Inicio</div>
+      <div class="tree-note">Cada recuadro de abajo es una página aparte del sitio, con su propia URL — no son secciones dentro de una misma página. Esta es una propuesta inicial de punto de partida: nombres, cantidad y orden de páginas se pueden cambiar con VOGTSA.</div>
       <div class="stem"></div>
       <div class="branches">
-        <div class="branch"><div class="branch-box"><span class="num">01</span>Nosotros</div></div>
-        <div class="branch"><div class="branch-box"><span class="num">02</span>Fabricación de Matrices</div></div>
-        <div class="branch"><div class="branch-box"><span class="num">03</span>Reparación de Matrices</div></div>
-        <div class="branch"><div class="branch-box"><span class="num">04</span>Representaciones</div></div>
-        <div class="branch"><div class="branch-box"><span class="num">05</span>Industrias que Atendemos</div></div>
-        <div class="branch"><div class="branch-box"><span class="num">06</span>Contacto</div></div>
+        <div class="branch"><div class="branch-box"><span class="num">01</span>Nosotros<span class="url">/nosotros</span></div></div>
+        <div class="branch"><div class="branch-box"><span class="num">02</span>Fabricación de Matrices<span class="url">/fabricacion-de-matrices</span></div></div>
+        <div class="branch"><div class="branch-box"><span class="num">03</span>Reparación de Matrices<span class="url">/reparacion-de-matrices</span></div></div>
+        <div class="branch"><div class="branch-box"><span class="num">04</span>Representaciones<span class="url">/representaciones</span></div></div>
+        <div class="branch"><div class="branch-box"><span class="num">05</span>Industrias que Atendemos<span class="url">/industrias</span></div></div>
+        <div class="branch"><div class="branch-box"><span class="num">06</span>Contacto<span class="url">/contacto</span></div></div>
       </div>
       <div class="phase2-label">Fase 2 — a futuro, no bloquean el lanzamiento</div>
       <div class="phase2-row">
-        <div class="branch-box">Trabajá con Nosotros</div>
-        <div class="branch-box">Novedades</div>
+        <div class="branch-box">Trabajá con Nosotros<span class="url">/trabaja-con-nosotros</span></div>
+        <div class="branch-box">Novedades<span class="url">/novedades</span></div>
       </div>
     </div>
   </div>
