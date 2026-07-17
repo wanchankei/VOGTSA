@@ -1,0 +1,953 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>VOGTSA × Chamán — Estructura del sitio (bosquejo)</title>
+<meta name="description" content="Primer bosquejo de la estructura del sitio de VOGTSA, bajado de la reunión de briefing. Documento de trabajo, no versión definitiva.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollTrigger.min.js"></script>
+<script src="https://unpkg.com/lenis@1.1.18/dist/lenis.min.js"></script>
+<style>
+  :root{
+    --bg:#ffffff; --bg2:#f5f6f2; --bg3:#eceee6;
+    --tint:#f0f6ec; --green:#056B32;
+    --ink:#0b0d09; --muted:#5a6153; --dim:#8c9384;
+    --lime:#73BE1C; --lime-lt:#a5de5f; --deep:#056B32; --deep-soft:#e2f0e7;
+    --amber:#9a6b00; --amber-soft:#fdf4e3;
+    --line:rgba(0,0,0,.12); --line-strong:rgba(0,0,0,.24);
+    --ease-out:cubic-bezier(0.16,1,0.3,1);
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;background:var(--bg);}
+  body{ color:var(--ink); font-family:'Inter',sans-serif; -webkit-font-smoothing:antialiased; overflow-x:hidden; }
+  ::selection{ background:var(--lime); color:#0a0c0a; }
+  a{ color:inherit; }
+
+  /* ---------- Chrome fijo ---------- */
+  nav.topnav{
+    position:fixed; top:0; left:0; right:0; z-index:996;
+    display:flex; align-items:center; justify-content:space-between; gap:16px;
+    padding:14px 5vw; background:rgba(255,255,255,.92); backdrop-filter:blur(10px);
+    border-bottom:1px solid var(--line);
+  }
+  .topnav .brand{ font-family:'Space Grotesk',sans-serif; font-weight:700; font-size:15px; letter-spacing:-.01em; }
+  .topnav .brand span{ color:var(--deep); }
+  .topnav .right{ display:flex; align-items:center; gap:18px; }
+  .topnav .meta{ font-family:'IBM Plex Mono',monospace; font-size:10.5px; letter-spacing:.12em; color:var(--muted); text-transform:uppercase; }
+  @media (max-width:620px){ .topnav .meta{ display:none; } }
+
+  .burger{
+    width:38px; height:32px; border:1px solid var(--line-strong); border-radius:3px; background:#fff;
+    display:flex; flex-direction:column; justify-content:center; align-items:center; gap:4px;
+    cursor:pointer; padding:0; transition:border-color .2s;
+  }
+  .burger:hover{ border-color:var(--ink); }
+  .burger span{ display:block; width:16px; height:1.5px; background:var(--ink); transition:transform .3s var(--ease-out), opacity .2s; }
+  body.menu-open .burger span:nth-child(1){ transform:translateY(5.5px) rotate(45deg); }
+  body.menu-open .burger span:nth-child(2){ opacity:0; }
+  body.menu-open .burger span:nth-child(3){ transform:translateY(-5.5px) rotate(-45deg); }
+
+  .menu{
+    position:fixed; top:0; right:0; bottom:0; width:min(360px,88vw); background:#fff; z-index:995;
+    border-left:1px solid var(--line); padding:82px 26px 30px; overflow-y:auto;
+    transform:translateX(101%); transition:transform .42s var(--ease-out);
+    box-shadow:-20px 0 60px rgba(0,0,0,.07);
+  }
+  body.menu-open .menu{ transform:translateX(0); }
+  .menu h4{ font-family:'IBM Plex Mono',monospace; font-size:10.5px; letter-spacing:.14em; text-transform:uppercase; color:var(--dim); margin:0 0 14px; font-weight:500; }
+  .menu a{
+    display:flex; gap:12px; align-items:baseline; text-decoration:none; padding:11px 0;
+    border-bottom:1px solid rgba(0,0,0,.06); font-size:14.5px; color:var(--ink); transition:color .2s, padding-left .2s;
+  }
+  .menu a:hover{ color:var(--deep); padding-left:5px; }
+  .menu a i{ font-style:normal; font-family:'IBM Plex Mono',monospace; font-size:10.5px; color:var(--dim); flex:none; min-width:18px; }
+  .menu-back{ position:fixed; inset:0; background:rgba(11,13,9,.32); z-index:994; opacity:0; pointer-events:none; transition:opacity .35s; }
+  body.menu-open .menu-back{ opacity:1; pointer-events:auto; }
+
+  /* Volver al inicio: anillo de progreso de lectura + flecha. Reemplaza al rail lateral:
+     dos indicadores de progreso a la vez es ruido. */
+  .totop{
+    position:fixed; right:26px; bottom:26px; z-index:993;
+    width:54px; height:54px; border-radius:50%; border:0; padding:0;
+    background:#fff; color:var(--ink); cursor:pointer;
+    display:grid; place-items:center;
+    opacity:0; pointer-events:none; transform:translateY(12px) scale(.9);
+    transition:opacity .3s, transform .4s var(--ease-out), background .25s, color .25s;
+    box-shadow:0 4px 26px rgba(0,0,0,.14);
+  }
+  .totop.on{ opacity:1; pointer-events:auto; transform:translateY(0) scale(1); }
+  .totop:hover{ background:var(--deep); color:#fff; }
+  .totop > svg{ grid-area:1/1; }
+  .totop-ring{ width:54px; height:54px; transform:rotate(-90deg); fill:none; }
+  .totop-ring .bg{ stroke:rgba(0,0,0,.09); stroke-width:1.5; }
+  .totop:hover .totop-ring .bg{ stroke:rgba(255,255,255,.25); }
+  .totop-ring .fill{ stroke:var(--lime); stroke-width:1.5; stroke-linecap:round; }
+  .totop-ico{ width:19px; height:19px; fill:none; stroke:currentColor; stroke-width:2.1; stroke-linecap:round; stroke-linejoin:round; }
+
+  /* ---------- Layout ---------- */
+  /* Antes: min-height:100vh + justify-content:center en TODAS las secciones.
+     Eso fuerza a cada sección a ocupar la pantalla entera, y cuando el contenido es poco
+     (la portada, por ejemplo) el texto queda flotando en el medio de un enorme vacío arriba
+     y abajo. Ahora cada sección mide lo que su contenido necesita, con el padding como único
+     aire fijo. Las secciones con mucho contenido no cambian en nada; se nota solo en las cortas. */
+  section{
+    position:relative; padding:116px 5vw 84px;
+    border-bottom:1px solid var(--line);
+  }
+  section.tint{ background:var(--tint); border-bottom-color:rgba(0,0,0,.07); }
+  section.green{ background:var(--green); border-bottom:0; color:#fff; }
+  @media (max-width:760px){ section{ padding:104px 6vw 68px; } }
+
+  .wrap{ width:100%; max-width:1380px; margin:0 auto; }
+
+  /* Encabezado de sección en dos columnas: usa el ancho con columnas, no estirando renglones.
+     align-items:start — con 'end' el título se hundía cuando la columna derecha tenía más texto
+     y dejaba un hueco enorme arriba. El .58rem alinea ópticamente el primer renglón con el título. */
+  .split{ display:grid; grid-template-columns:minmax(0,1.05fr) minmax(0,.95fr); gap:22px 72px; align-items:start; margin-bottom:46px; }
+  .split h1, .split h2{ margin-bottom:0; }
+  .split > div{ padding-top:.58rem; }
+  .split > div > p:last-child{ margin-bottom:0; }
+  @media (max-width:900px){
+    .split{ grid-template-columns:1fr; gap:16px; margin-bottom:32px; }
+    .split > div{ padding-top:0; }
+  }
+
+  /* position:sticky en las dos columnas (no align-items:center) — cuando una columna es una
+     lista larga (wf) y la otra son notas cortas, centrar dejaba la nota fija a mitad de la lista:
+     se veía bien en una captura de la sección entera, pero al leer con scroll normal la nota
+     quedaba fuera de pantalla la mayor parte del tiempo. Con sticky, la columna corta te acompaña
+     mientras bajás por la lista larga y se despega recién cuando la lista termina. En columnas
+     parejas (mismo alto) esto no cambia nada, porque nunca llegan a despegarse. */
+  .cols{ display:grid; grid-template-columns:minmax(0,1.3fr) minmax(0,1fr); gap:52px; align-items:start; }
+  .cols > div{ position:sticky; top:96px; }
+  @media (max-width:1000px){ .cols{ grid-template-columns:1fr; gap:34px; } .cols > div{ position:static; } }
+
+  .duo{ display:grid; grid-template-columns:minmax(0,1fr) minmax(0,1fr); gap:52px; align-items:start; }
+  .duo > div{ position:sticky; top:96px; }
+  @media (max-width:1000px){ .duo{ grid-template-columns:1fr; gap:34px; } .duo > div{ position:static; } }
+
+  .notes2{ display:grid; grid-template-columns:minmax(0,1fr) minmax(0,1fr); gap:22px; margin-top:30px; align-items:start; }
+  @media (max-width:900px){ .notes2{ grid-template-columns:1fr; } }
+
+  .kicker{ font-family:'IBM Plex Mono',monospace; font-size:11px; letter-spacing:.18em; color:var(--muted); text-transform:uppercase; margin-bottom:22px; display:flex; align-items:center; gap:12px; }
+  .kicker::before{ content:""; width:28px; height:2px; background:var(--lime); flex:none; }
+  .kicker b{ color:var(--deep); font-weight:600; }
+
+  h1{ font-family:'Space Grotesk',sans-serif; font-weight:700; font-size:clamp(34px,4.6vw,64px); line-height:1.05; letter-spacing:-.03em; margin:0 0 26px; }
+  h2{ font-family:'Space Grotesk',sans-serif; font-weight:700; font-size:clamp(28px,3.4vw,46px); line-height:1.09; letter-spacing:-.025em; margin:0 0 22px; }
+  h1 em, h2 em{ font-style:normal; color:var(--deep); }
+  p{ font-size:clamp(15px,1.05vw,16.5px); line-height:1.68; color:var(--muted); margin:0 0 16px; max-width:64ch; }
+  p strong{ color:var(--ink); font-weight:600; }
+  .lead{ font-size:clamp(16px,1.2vw,18.5px); color:var(--ink); max-width:60ch; }
+
+  section.green .kicker{ color:rgba(255,255,255,.72); }
+  section.green .kicker b{ color:#fff; }
+  section.green .kicker::before{ background:var(--lime-lt); }
+  section.green h1, section.green h2{ color:#fff; }
+  section.green h1 em, section.green h2 em{ color:var(--lime-lt); }
+  section.green p{ color:rgba(255,255,255,.84); }
+  section.green p strong{ color:#fff; }
+  section.green .lead{ color:#fff; }
+  section.green .card{ background:rgba(255,255,255,.08); border-color:rgba(255,255,255,.2); border-top-color:var(--lime); }
+  section.green .card h3{ color:#fff; }
+  section.green .card p{ color:rgba(255,255,255,.82); }
+  section.green .note{ background:rgba(255,255,255,.1); border-left-color:var(--lime); }
+  section.green .note p{ color:rgba(255,255,255,.9); }
+  section.green .btn{ background:transparent; border-color:rgba(255,255,255,.45); color:#fff; }
+  section.green .btn:hover{ border-color:#fff; background:rgba(255,255,255,.08); }
+  section.green .btn.primary{ background:var(--lime); border-color:var(--lime); color:#08300f; }
+  section.green .btn.primary:hover{ background:#fff; color:var(--green); }
+  section.green .fig{ background:rgba(255,255,255,.08); border-color:rgba(255,255,255,.2); }
+  section.green .fig .l{ color:rgba(255,255,255,.7); }
+  section.green .foot-meta{ color:rgba(255,255,255,.55); }
+
+  .note{ border-left:3px solid var(--lime); background:var(--bg2); padding:18px 22px; margin:26px 0 0; max-width:74ch; }
+  .note p{ margin:0; max-width:none; }
+  .notes2 .note, .cols .note, .duo .note{ max-width:none; }
+  /* Una nota suelta justo debajo de un bloque .duo hereda el límite de 74ch pensado para
+     texto en una sola columna, y queda angosta y apretada contra las dos columnas de arriba.
+     Ahí sí tiene que ocupar el ancho completo de las dos columnas. */
+  .duo + .note{ max-width:none; }
+  section.tint .note{ background:#fff; }
+  .note.amber{ border-left-color:var(--amber); background:var(--amber-soft); }
+  .note.amber p{ color:#5c4200; }
+
+  /* ---------- Wireframe ---------- */
+  .wf{ border:1px solid var(--line-strong); border-radius:3px; background:#fff; overflow:hidden; width:100%; }
+  .wf-head{ background:var(--ink); color:#fff; padding:9px 14px; font-family:'IBM Plex Mono',monospace; font-size:11px; letter-spacing:.1em; text-transform:uppercase; display:flex; justify-content:space-between; align-items:center; gap:10px; }
+  .wf-head span{ color:var(--lime); }
+  .wf-body{ padding:10px; display:flex; flex-direction:column; gap:7px; background:var(--bg2); }
+  .blk{ background:#fff; border:1px solid var(--line); border-radius:2px; padding:11px 13px; display:flex; gap:11px; align-items:flex-start; }
+  .blk .n{ font-family:'IBM Plex Mono',monospace; font-size:10px; color:var(--dim); flex:none; padding-top:2px; min-width:16px; }
+  .blk .t{ font-size:14px; font-weight:600; color:var(--ink); line-height:1.35; }
+  .blk .d{ font-size:12.5px; color:var(--muted); line-height:1.45; margin-top:3px; }
+  .blk.key{ border-color:var(--deep); background:var(--deep-soft); }
+  .blk.key .t{ color:var(--deep); }
+  .blk.foot{ background:var(--bg3); }
+  .blk.idea{ border-style:dashed; border-color:var(--amber); background:var(--amber-soft); }
+  .blk.idea .t{ color:#7a5400; }
+  .blk.idea .d{ color:#6b4c05; }
+  .pill{ display:inline-block; font-family:'IBM Plex Mono',monospace; font-size:9px; letter-spacing:.08em; text-transform:uppercase; background:var(--amber); color:#fff; padding:2px 6px; border-radius:2px; margin-left:7px; vertical-align:2px; }
+  .wf-cap{ font-family:'IBM Plex Mono',monospace; font-size:11px; letter-spacing:.1em; text-transform:uppercase; color:var(--muted); margin-bottom:10px; }
+  section.green .wf-cap{ color:rgba(255,255,255,.65); }
+
+  /* ---------- Mapa ---------- */
+  .map{ background:#fff; border:1px solid var(--line); border-radius:3px; padding:18px 22px; }
+  .map-row{ display:flex; align-items:center; gap:12px; padding:9px 0; border-bottom:1px solid rgba(0,0,0,.05); }
+  .map-row:last-child{ border-bottom:0; }
+  .map-row .pg{ flex:none; width:15px; height:19px; border:1.5px solid var(--dim); border-radius:2px; background:#fff; position:relative; }
+  .map-row .pg::after{ content:""; position:absolute; left:3px; right:3px; top:4px; height:1.5px; background:var(--dim); box-shadow:0 4px 0 var(--dim), 0 8px 0 var(--dim); }
+  .map-row .nm{ font-size:15px; color:var(--ink); font-weight:500; }
+  .map-row .rol{ margin-left:auto; font-family:'IBM Plex Mono',monospace; font-size:10.5px; letter-spacing:.06em; color:var(--dim); text-transform:uppercase; text-align:right; flex:none; }
+  .map-row.main{ padding:12px 0; }
+  .map-row.main .nm{ font-size:19px; font-weight:700; font-family:'Space Grotesk',sans-serif; }
+  .map-row.main .pg{ width:19px; height:24px; border-color:var(--deep); border-width:2px; }
+  .map-row.main .pg::after{ background:var(--deep); box-shadow:0 4px 0 var(--deep), 0 8px 0 var(--deep); }
+  .map-row.main .rol{ color:var(--deep); font-weight:600; }
+  .map-row.hub{ background:var(--deep-soft); margin:4px -12px; padding:11px 12px; border-radius:3px; border-bottom:0; }
+  .map-row.hub .nm{ font-weight:700; color:var(--deep); }
+  .map-row.hub .pg{ border-color:var(--deep); }
+  .map-row.hub .pg::after{ background:var(--deep); box-shadow:0 4px 0 var(--deep), 0 8px 0 var(--deep); }
+  .map-row.hub .rol{ color:var(--deep); }
+  .map-row.child{ padding-left:34px; }
+  .map-row.child .nm{ font-size:14px; color:var(--muted); font-weight:400; }
+  .map-row.child .pg{ width:12px; height:15px; }
+  .map-row.child .pg::after{ top:3px; box-shadow:0 3px 0 var(--dim); }
+  .ej{ font-family:'IBM Plex Mono',monospace; font-size:10px; color:var(--amber); background:var(--amber-soft); border:1px solid rgba(154,107,0,.3); padding:1px 6px; border-radius:2px; margin-left:8px; text-transform:none; letter-spacing:0; }
+  .map-legend{ margin-top:16px; font-family:'IBM Plex Mono',monospace; font-size:11px; color:var(--muted); line-height:1.9; }
+  .map-legend i{ font-style:normal; color:var(--deep); font-weight:600; }
+  @media (max-width:640px){
+    .map-row{ flex-wrap:wrap; }
+    .map-row .rol{ margin-left:27px; width:100%; text-align:left; margin-top:3px; }
+  }
+
+  /* ---------- Nav mock ---------- */
+  .navmock{ border:1px solid var(--line-strong); border-radius:3px; background:#fff; }
+  .navmock-bar{ display:flex; align-items:center; gap:6px; flex-wrap:wrap; padding:14px 18px; border-bottom:1px solid var(--line); }
+  .navmock-bar .logo{ font-family:'Space Grotesk',sans-serif; font-weight:700; font-size:15px; margin-right:14px; }
+  .navmock-bar .item{ font-size:13.5px; color:var(--muted); padding:6px 10px; border-radius:2px; }
+  .navmock-bar .item.act{ background:var(--deep-soft); color:var(--deep); font-weight:600; }
+  .navmock-bar .spacer{ flex:1; }
+  .navmock-bar .lang{ font-family:'IBM Plex Mono',monospace; font-size:11px; border:1px solid var(--line-strong); padding:5px 9px; border-radius:2px; }
+  .navmock-bar .cta{ font-size:12.5px; font-weight:600; background:var(--lime); color:#0a0c0a; padding:7px 13px; border-radius:2px; white-space:nowrap; }
+  .navmock-drop{ padding:16px 18px 20px; background:var(--bg2); display:grid; grid-template-columns:repeat(auto-fit,minmax(200px,1fr)); gap:8px 24px; }
+  .navmock-drop .dl{ font-size:13px; color:var(--ink); padding:5px 0; border-bottom:1px solid var(--line); }
+  .navmock-drop .dh{ grid-column:1/-1; font-family:'IBM Plex Mono',monospace; font-size:10.5px; letter-spacing:.12em; text-transform:uppercase; color:var(--dim); margin-bottom:2px; }
+
+  /* ---------- Tabla ---------- */
+  table.cmp{ border-collapse:collapse; width:100%; background:#fff; }
+  table.cmp th, table.cmp td{ text-align:left; padding:15px 18px; border-bottom:1px solid var(--line); font-size:14.5px; vertical-align:top; }
+  table.cmp th{ font-family:'IBM Plex Mono',monospace; font-size:11px; letter-spacing:.1em; text-transform:uppercase; color:var(--muted); font-weight:500; }
+  table.cmp th.pick{ color:var(--deep); }
+  table.cmp td.pick{ background:var(--deep-soft); font-weight:500; }
+  table.cmp td:first-child{ color:var(--muted); }
+
+  .figs{ display:flex; flex-wrap:wrap; gap:14px; }
+  .fig{ border:1px solid var(--line); border-top:3px solid var(--lime); border-radius:2px; padding:16px 22px; background:var(--bg2); min-width:150px; flex:1 1 auto; max-width:230px; }
+  .fig .v{ font-family:'Space Grotesk',sans-serif; font-weight:700; font-size:30px; letter-spacing:-.02em; line-height:1; }
+  .fig .l{ font-family:'IBM Plex Mono',monospace; font-size:10.5px; letter-spacing:.1em; text-transform:uppercase; color:var(--muted); margin-top:8px; }
+
+  /* 3 columnas fijas, no auto-fit: con 6 tarjetas el auto-fit armaba 5 columnas
+     y dejaba la sexta huérfana en una fila sola. Así van 3+3 y 3 justas. */
+  .cards{ display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:16px; }
+  @media (max-width:1040px){ .cards{ grid-template-columns:repeat(2,minmax(0,1fr)); } }
+  @media (max-width:660px){ .cards{ grid-template-columns:1fr; } }
+  .card{ border:1px solid var(--line); border-top:3px solid var(--lime); padding:20px 22px; background:var(--bg2); border-radius:2px; }
+  section.tint .card{ background:#fff; }
+  .card h3{ font-family:'Space Grotesk',sans-serif; font-size:17px; margin:0 0 8px; letter-spacing:-.01em; }
+  .card p{ font-size:14px; margin:0; max-width:none; }
+
+  .btn{ display:inline-block; font-family:'IBM Plex Mono',monospace; font-size:12.5px; letter-spacing:.08em; text-transform:uppercase; text-decoration:none; padding:15px 26px; border:1px solid var(--line-strong); border-radius:2px; color:var(--ink); background:#fff; transition:all .25s var(--ease-out); }
+  .btn:hover{ border-color:var(--ink); }
+  .btn.primary{ border-color:var(--deep); background:var(--deep); color:#fff; }
+  .btn.primary:hover{ background:#fff; color:var(--deep); }
+  .btns{ display:flex; flex-wrap:wrap; gap:12px; margin-top:32px; }
+
+  /* Bloque de cierre (nota + botones + pie): antes quedaba angosto (74ch) y pegado a la
+     izquierda, debajo de un encabezado a dos columnas mucho más ancho. Centrarlo como bloque
+     lo convierte en el remate visual de la página en vez de un resto desalineado. */
+  .cta{ max-width:640px; margin:44px auto 0; text-align:center; }
+  .cta .note{ max-width:none; text-align:left; margin-top:0; }
+  .cta .btns{ justify-content:center; }
+  .cta .foot-meta{ text-align:center; margin-left:auto; margin-right:auto; }
+
+  .flow{ font-family:'IBM Plex Mono',monospace; font-size:12.5px; color:var(--muted); line-height:2.1; background:#fff; border:1px solid var(--line); padding:16px 20px; border-radius:3px; }
+  .flow b{ color:var(--deep); }
+  hr.sep{ border:0; border-top:1px solid var(--line); margin:30px 0; }
+  .foot-meta{ font-family:'IBM Plex Mono',monospace; font-size:11px; letter-spacing:.1em; color:var(--dim); text-transform:uppercase; }
+</style>
+</head>
+<body>
+
+<nav class="topnav">
+  <div class="brand">VOGTSA <span>×</span> CHAMÁN</div>
+  <div class="right">
+    <div class="meta">Bosquejo de trabajo</div>
+    <button class="burger" id="burger" aria-label="Abrir menú" aria-expanded="false"><span></span><span></span><span></span></button>
+  </div>
+</nav>
+
+<div class="menu-back" id="menuBack"></div>
+<nav class="menu" id="menu" aria-label="Índice del documento">
+  <h4>Índice</h4>
+  <a href="#s0"><i>00</i>Estructura del sitio</a>
+  <a href="#s1"><i>01</i>Cómo leer este documento</a>
+  <a href="#s2"><i>02</i>Lo que nos llevamos de la reunión</a>
+  <a href="#s3"><i>03</i>El mapa del sitio</a>
+  <a href="#s4"><i>04</i>Cómo se navega</a>
+  <a href="#s5"><i>05</i>Inicio</a>
+  <a href="#s6"><i>06</i>Nosotros</a>
+  <a href="#s7"><i>07</i>Productos</a>
+  <a href="#s8"><i>08</i>Industrias</a>
+  <a href="#s9"><i>09</i>Servicios</a>
+  <a href="#s10"><i>10</i>Representaciones</a>
+  <a href="#s11"><i>11</i>Trabajá con nosotros y Contacto</a>
+  <a href="#s12"><i>12</i>Una alternativa más chica</a>
+  <a href="#s13"><i>13</i>Próximo paso</a>
+</nav>
+
+<button class="totop" id="totop" aria-label="Volver al inicio" title="Volver al inicio">
+  <svg class="totop-ring" viewBox="0 0 54 54" aria-hidden="true">
+    <circle class="bg" cx="27" cy="27" r="25.5"/>
+    <circle class="fill" id="ringFill" cx="27" cy="27" r="25.5"/>
+  </svg>
+  <svg class="totop-ico" viewBox="0 0 24 24" aria-hidden="true">
+    <path d="M6.5 14.5L12 9L17.5 14.5"/>
+  </svg>
+</button>
+
+<!-- 00 PORTADA -->
+<section id="s0">
+  <div class="wrap">
+    <div class="kicker">— 00 &nbsp;<b>ESTRUCTURA DEL SITIO</b></div>
+    <div class="split">
+      <h1>Así nos imaginamos<br>la web, <em>por ahora</em>.</h1>
+      <div>
+        <p class="lead">Este documento es el primer bosquejo que preparamos después de la reunión. Muestra cuántas páginas tendría el sitio y qué secciones llevaría cada una.</p>
+        <p><strong>No es la web terminada ni una versión definitiva.</strong> Es el punto de partida para terminar de definirlo en conjunto.</p>
+      </div>
+    </div>
+    <div class="figs">
+      <div class="fig"><div class="v">24</div><div class="l">Páginas</div></div>
+      <div class="fig"><div class="v">2</div><div class="l">Idiomas · ES / EN</div></div>
+      <div class="fig"><div class="v">8</div><div class="l">Tipos de página</div></div>
+    </div>
+  </div>
+</section>
+
+<!-- 01 QUÉ ES ESTO -->
+<section id="s1">
+  <div class="wrap">
+    <div class="kicker">— 01 &nbsp;<b>CÓMO LEER ESTE DOCUMENTO</b></div>
+    <div class="split">
+      <h2>Es un bosquejo.<br><em>Todo se puede cambiar.</em></h2>
+      <div>
+        <p class="lead">Lo armamos con lo que salió de la reunión, para que puedan ver de forma concreta cómo quedaría organizada la web antes de empezar a diseñar y programar.</p>
+      </div>
+    </div>
+    <div class="cards">
+      <div class="card">
+        <h3>Se trabaja encima</h3>
+        <p>Algunas cosas van a quedar como están y otras se van a modificar. Es la base de la conversación, no el resultado.</p>
+      </div>
+      <div class="card">
+        <h3>Falta algo o sobra algo</h3>
+        <p>Si algo no está, si algo no corresponde, o si aparece una sección que pasamos por alto, lo comentan y lo ajustamos.</p>
+      </div>
+      <div class="card">
+        <h3>Todavía no hay diseño</h3>
+        <p>Textos, fotos, colores y diseño visual se definen más adelante. Acá está solamente la organización del contenido.</p>
+      </div>
+    </div>
+    <div class="note">
+      <p>Los nombres de las secciones son orientativos: sirven para entender qué va en cada lugar, no son los títulos finales que va a leer el visitante.</p>
+    </div>
+  </div>
+</section>
+
+<!-- 02 QUÉ ESCUCHAMOS — VERDE -->
+<section id="s2" class="green">
+  <div class="wrap">
+    <div class="kicker">— 02 &nbsp;<b>LO QUE NOS LLEVAMOS DE LA REUNIÓN</b></div>
+    <div class="split">
+      <h2>Seis definiciones que ordenan<br><em>todo lo demás</em>.</h2>
+      <div>
+        <p class="lead">Cada decisión que sigue en este documento sale de una de estas seis. Si alguna quedó mal interpretada, conviene corregirla ahora.</p>
+      </div>
+    </div>
+    <div class="cards">
+      <div class="card">
+        <h3>Es la carta de presentación</h3>
+        <p>La web existe para que quien busque a VOGTSA encuentre una empresa seria, y para que esa visita termine en una consulta. No es un catálogo ni una tienda.</p>
+      </div>
+      <div class="card">
+        <h3>Un socio, no un proveedor</h3>
+        <p>El mensaje que atraviesa cada página: VOGTSA acompaña al cliente, no le despacha una pieza y se despide.</p>
+      </div>
+      <div class="card">
+        <h3>Mostramos qué hacen, no cómo</h3>
+        <p>Sin planos, sin tolerancias, sin datos técnicos finos, sin marcas ni modelos de máquinas. Comunicamos la capacidad, no el know-how.</p>
+      </div>
+      <div class="card">
+        <h3>No mostramos clientes</h3>
+        <p>No publicamos a quién le venden. En su lugar pesan la trayectoria, el ISO y las cuatro representaciones.</p>
+      </div>
+      <div class="card">
+        <h3>Español e inglés</h3>
+        <p>Todo el sitio en los dos idiomas, porque el objetivo es que los encuentren desde el exterior.</p>
+      </div>
+      <div class="card">
+        <h3>Poco texto</h3>
+        <p>Frases cortas y directas. Una página para entender en segundos, no para leer.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- 03 MAPA DEL SITIO -->
+<section id="s3">
+  <div class="wrap">
+    <div class="kicker">— 03 &nbsp;<b>EL MAPA DEL SITIO</b></div>
+    <div class="split">
+      <h2>Cada recuadro<br>es <em>una página</em>.</h2>
+      <div>
+        <p class="lead">El sitio tiene una página principal y seis páginas más. Tres de ellas son páginas madre: además de su propio contenido, abren páginas hijas, una por cada tema.</p>
+      </div>
+    </div>
+    <div class="cols">
+      <div>
+        <div class="map">
+          <div class="map-row main"><span class="pg"></span><span class="nm">Inicio</span><span class="rol">Página principal</span></div>
+          <div class="map-row"><span class="pg"></span><span class="nm">Nosotros</span><span class="rol">Página</span></div>
+
+          <div class="map-row hub"><span class="pg"></span><span class="nm">Productos</span><span class="rol">Página madre · abre 8 páginas</span></div>
+          <div class="map-row child"><span class="pg"></span><span class="nm">Trefilas de metal duro</span><span class="rol">Página</span></div>
+          <div class="map-row child"><span class="pg"></span><span class="nm">Trefilas de diamante</span><span class="rol">Página</span></div>
+          <div class="map-row child"><span class="pg"></span><span class="nm">Mandriles</span><span class="rol">Página</span></div>
+          <div class="map-row child"><span class="pg"></span><span class="nm">Picos y matrices</span><span class="rol">Página</span></div>
+          <div class="map-row child"><span class="pg"></span><span class="nm">Matrices de extrusión</span><span class="rol">Página</span></div>
+          <div class="map-row child"><span class="pg"></span><span class="nm">Matrices de corte y conformado</span><span class="rol">Página</span></div>
+          <div class="map-row child"><span class="pg"></span><span class="nm">Pinzas y mordazas</span><span class="rol">Página</span></div>
+          <div class="map-row child"><span class="pg"></span><span class="nm">Matrices especiales</span><span class="rol">Página</span></div>
+
+          <div class="map-row hub"><span class="pg"></span><span class="nm">Industrias</span><span class="rol">Página madre · abre 1 página por industria</span></div>
+          <div class="map-row child"><span class="pg"></span><span class="nm">Siderurgia</span><span class="rol">Página</span></div>
+          <div class="map-row child"><span class="pg"></span><span class="nm">Cables y conductores</span><span class="rol">Página</span></div>
+          <div class="map-row child"><span class="pg"></span><span class="nm">Alimentación <span class="ej">ejemplo</span></span><span class="rol">Página</span></div>
+          <div class="map-row child"><span class="pg"></span><span class="nm">Petróleo y minería <span class="ej">ejemplo</span></span><span class="rol">Página</span></div>
+
+          <div class="map-row hub"><span class="pg"></span><span class="nm">Servicios</span><span class="rol">Página madre · abre 4 páginas</span></div>
+          <div class="map-row child"><span class="pg"></span><span class="nm">Reparación de matrices</span><span class="rol">Página</span></div>
+          <div class="map-row child"><span class="pg"></span><span class="nm">Rectificación y pulido</span><span class="rol">Página</span></div>
+          <div class="map-row child"><span class="pg"></span><span class="nm">Análisis de falla</span><span class="rol">Página</span></div>
+          <div class="map-row child"><span class="pg"></span><span class="nm">Corte por hilo (electroerosión)</span><span class="rol">Página</span></div>
+
+          <div class="map-row"><span class="pg"></span><span class="nm">Representaciones</span><span class="rol">Página</span></div>
+          <div class="map-row"><span class="pg"></span><span class="nm">Trabajá con nosotros</span><span class="rol">Página</span></div>
+          <div class="map-row"><span class="pg"></span><span class="nm">Contacto</span><span class="rol">Página</span></div>
+        </div>
+      </div>
+      <div>
+        <div class="map-legend">
+          <div><i>Página principal</i> — la que se ve al entrar a vogtsa.com.ar</div>
+          <div><i>Página madre</i> — tiene contenido propio y abre otras páginas adentro</div>
+        </div>
+        <div class="note">
+          <p><strong>24 páginas en español y las mismas 24 en inglés.</strong> No son 48 trabajos distintos: las 8 páginas de producto comparten el mismo molde y solo cambia el contenido. Por eso el sitio se arma con 8 tipos de página, no con 48.</p>
+        </div>
+        <div class="note amber">
+          <p><strong>Alimentación y petróleo y minería están puestas como ejemplo</strong>, para mostrar cómo se vería una industria dentro del sitio. Pueden ser estas u otras: si hay más rubros que no llegamos a charlar en la reunión, los agregamos sin problema.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- 04 NAVEGACIÓN — TINT -->
+<section id="s4" class="tint">
+  <div class="wrap">
+    <div class="kicker">— 04 &nbsp;<b>CÓMO SE NAVEGA</b></div>
+    <div class="split">
+      <h2>El menú de arriba,<br>siempre a la vista.</h2>
+      <div>
+        <p class="lead">Productos, Industrias y Servicios se despliegan al pasar el mouse. El visitante que ya sabe qué busca llega en un clic.</p>
+      </div>
+    </div>
+    <div class="navmock">
+      <div class="navmock-bar">
+        <div class="logo">VOGTSA</div>
+        <div class="item">Nosotros</div>
+        <div class="item act">Productos ▾</div>
+        <div class="item">Industrias ▾</div>
+        <div class="item">Servicios ▾</div>
+        <div class="item">Representaciones</div>
+        <div class="item">Contacto</div>
+        <div class="spacer"></div>
+        <div class="lang">ES | EN</div>
+        <div class="cta">Consulta rápida</div>
+      </div>
+      <div class="navmock-drop">
+        <div class="dh">Productos — se despliega así</div>
+        <div class="dl">Trefilas de metal duro</div>
+        <div class="dl">Trefilas de diamante</div>
+        <div class="dl">Mandriles</div>
+        <div class="dl">Picos y matrices</div>
+        <div class="dl">Matrices de extrusión</div>
+        <div class="dl">Matrices de corte y conformado</div>
+        <div class="dl">Pinzas y mordazas</div>
+        <div class="dl">Matrices especiales</div>
+      </div>
+    </div>
+    <div class="notes2">
+      <div class="note">
+        <p><strong>Ese botón verde abre una conversación de WhatsApp con la empresa.</strong> Muchas consultas del rubro son urgentes: una máquina parada no espera. Por eso el acceso directo está fijo en todas las páginas y no solo en Contacto.</p>
+      </div>
+      <div class="note amber">
+        <p><strong>"Consulta rápida" es un texto de ejemplo.</strong> El botón no va a decir "WhatsApp": la idea es que invite a escribir. El texto definitivo lo elegimos más adelante.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- 05 INICIO -->
+<section id="s5">
+  <div class="wrap">
+    <div class="kicker">— 05 &nbsp;<b>PÁGINA PRINCIPAL: INICIO</b></div>
+    <div class="split">
+      <h2>Nueve bloques,<br>en este orden.</h2>
+      <div>
+        <p class="lead">Cada bloque responde la pregunta que deja el anterior. Ese es el motivo del orden: que el visitante siga bajando sin darse cuenta.</p>
+      </div>
+    </div>
+    <div class="duo">
+      <div>
+        <div class="wf">
+          <div class="wf-head">Inicio <span>9 secciones</span></div>
+          <div class="wf-body">
+            <div class="blk key"><div class="n">01</div><div><div class="t">Portada</div><div class="d">Qué hace la empresa y por qué elegirla, en una línea. Dos botones: cotizar y ver productos.</div></div></div>
+            <div class="blk"><div class="n">02</div><div><div class="t">Franja de credenciales</div><div class="d">Años de trayectoria · generaciones · ISO · rango de medidas · tolerancia de trabajo.</div></div></div>
+            <div class="blk"><div class="n">03</div><div><div class="t">Los tres pilares</div><div class="d">Fabricación · Reparación · Representaciones. Cada uno lleva a su sección.</div></div></div>
+            <div class="blk"><div class="n">04</div><div><div class="t">Industrias que atendemos</div><div class="d">Accesos por rubro. El visitante entra por el suyo sin leer el resto.</div></div></div>
+            <div class="blk"><div class="n">05</div><div><div class="t">Fabricación bajo plano del cliente</div><div class="d">El bloque que distingue fabricar a medida de hacer desarrollos.</div></div></div>
+            <div class="blk"><div class="n">06</div><div><div class="t">Por qué VOGTSA</div><div class="d">Trayectoria, calidad, servicio, responsabilidad y asesoramiento.</div></div></div>
+            <div class="blk"><div class="n">07</div><div><div class="t">Representaciones</div><div class="d">Las cuatro marcas, como respaldo.</div></div></div>
+            <div class="blk key"><div class="n">08</div><div><div class="t">Cierre</div><div class="d">Solicitar cotización y consulta directa.</div></div></div>
+            <div class="blk foot"><div class="n">09</div><div><div class="t">Pie de página</div><div class="d">Datos, mapa, LinkedIn, logo ISO.</div></div></div>
+          </div>
+        </div>
+      </div>
+      <div>
+        <div class="wf-cap">El recorrido, en palabras</div>
+        <div class="flow">
+          <b>1.</b> Qué es esta empresa<br>
+          <b>2.</b> Por qué le puedo creer<br>
+          <b>3.</b> Qué hace exactamente<br>
+          <b>4.</b> ¿Sirve para lo mío?<br>
+          <b>5.</b> ¿Y si mi pieza es especial?<br>
+          <b>6.</b> ¿Por qué ellos y no otro?<br>
+          <b>7.</b> Los contacto
+        </div>
+        <p style="margin-top:22px;">La portada tiene cuatro o cinco segundos para decir a qué se dedica la empresa y por qué elegirla. Todo lo demás existe para sostener esa primera frase.</p>
+        <div class="note">
+          <p>Como no mostramos clientes, <strong>la franja de credenciales es la que genera confianza</strong>: son datos concretos y verificables, no adjetivos.</p>
+        </div>
+        <div class="note amber">
+          <p><strong>Las cifras que aparecen en este bosquejo son un ejemplo</strong> del tipo de dato que va en ese lugar: años de trayectoria, rango de medidas, tolerancia de trabajo. Cuáles se publican finalmente, y con qué números, lo confirmamos antes de escribir los textos.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- 06 NOSOTROS — TINT -->
+<section id="s6" class="tint">
+  <div class="wrap">
+    <div class="kicker">— 06 &nbsp;<b>PÁGINA: NOSOTROS</b></div>
+    <div class="split">
+      <h2>La trayectoria, contada<br>como <em>prueba</em>.</h2>
+      <div>
+        <p class="lead">Es la página que reemplaza a los logos de clientes: si no se puede mostrar a quién le venden, lo que queda es demostrar quiénes son.</p>
+      </div>
+    </div>
+    <div class="duo">
+      <div>
+        <div class="wf">
+          <div class="wf-head">Nosotros <span>7 secciones</span></div>
+          <div class="wf-body">
+            <div class="blk"><div class="n">01</div><div><div class="t">Encabezado</div><div class="d">Cuatro generaciones, un mismo oficio.</div></div></div>
+            <div class="blk key"><div class="n">02</div><div><div class="t">Línea de tiempo</div><div class="d">Las generaciones de la empresa, animándose a medida que se baja.</div></div></div>
+            <div class="blk"><div class="n">03</div><div><div class="t">La historia</div><div class="d">Breve. La versión corta de lo que ya está escrito.</div></div></div>
+            <div class="blk"><div class="n">04</div><div><div class="t">Compromiso de calidad</div><div class="d">Orden de Fabricación interna, control en cada etapa. Acá va el logo del ISO.</div></div></div>
+            <div class="blk"><div class="n">05</div><div><div class="t">Precisión, en concreto</div><div class="d">La tolerancia de trabajo y el rango de medidas que abarcan.</div></div></div>
+            <div class="blk"><div class="n">06</div><div><div class="t">Industrias que atendemos</div><div class="d">Franja de acceso a las páginas de industria.</div></div></div>
+            <div class="blk key"><div class="n">07</div><div><div class="t">Cierre</div><div class="d">Solicitar cotización.</div></div></div>
+          </div>
+        </div>
+      </div>
+      <div>
+        <div class="wf-cap">Lo que hace distinta a esta página</div>
+        <p><strong>La línea de tiempo es el momento de movimiento del sitio.</strong> Es el único lugar donde una web institucional puede ser dinámica sin dejar de ser seria, y es lo que ninguna competencia puede copiar: la historia no se improvisa.</p>
+        <hr class="sep">
+        <p><strong>"Precisión" sola no dice nada</strong> — está en la web de todos los competidores. Un número concreto sí. Por eso hay una sección entera para sostener la palabra con un dato.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- 07 PRODUCTOS -->
+<section id="s7">
+  <div class="wrap">
+    <div class="kicker">— 07 &nbsp;<b>PÁGINA MADRE: PRODUCTOS</b></div>
+    <div class="split">
+      <h2>Una página madre<br>y ocho páginas hijas.</h2>
+      <div>
+        <p class="lead">La página madre presenta las ocho categorías. Cada categoría tiene su propia página, corta, con la misma estructura.</p>
+      </div>
+    </div>
+    <div class="duo">
+      <div>
+        <div class="wf-cap">Página madre</div>
+        <div class="wf">
+          <div class="wf-head">Productos <span>5 secciones</span></div>
+          <div class="wf-body">
+            <div class="blk"><div class="n">01</div><div><div class="t">Encabezado</div><div class="d">Qué fabricamos.</div></div></div>
+            <div class="blk key"><div class="n">02</div><div><div class="t">Las 8 categorías</div><div class="d">Una tarjeta por categoría, con foto y una línea.</div></div></div>
+            <div class="blk"><div class="n">03</div><div><div class="t">Materiales</div><div class="d">Carburo de tungsteno, diamante, PCD: qué es cada uno y para qué aplicación sirve.</div></div></div>
+            <div class="blk"><div class="n">04</div><div><div class="t">Fabricación fuera de catálogo</div><div class="d">La lista nunca se muestra como cerrada. Con el plano del cliente, se fabrica.</div></div></div>
+            <div class="blk key"><div class="n">05</div><div><div class="t">Cierre</div><div class="d">Solicitar cotización.</div></div></div>
+          </div>
+        </div>
+      </div>
+      <div>
+        <div class="wf-cap">Cada página de producto — se repite ×8</div>
+        <div class="wf">
+          <div class="wf-head">Ej. Trefilas de metal duro <span>5 secciones</span></div>
+          <div class="wf-body">
+            <div class="blk key"><div class="n">01</div><div><div class="t">Título y definición</div><div class="d">Qué es y para qué sirve, en dos renglones.</div></div></div>
+            <div class="blk"><div class="n">02</div><div><div class="t">Foto</div><div class="d">Una foto de la pieza.</div></div></div>
+            <div class="blk"><div class="n">03</div><div><div class="t">Descripción</div><div class="d">En qué proceso se usa y en qué material se fabrica.</div></div></div>
+            <div class="blk"><div class="n">04</div><div><div class="t">Variantes</div><div class="d">Redondas o de forma; enteras o partidas. Los nombres, no los números.</div></div></div>
+            <div class="blk"><div class="n">05</div><div><div class="t">Dónde se aplica</div><div class="d">Accesos a las industrias donde se usa esa pieza.</div></div></div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="note">
+      <p><strong>El formulario de cotización aparece en la página madre, no en cada página de producto.</strong> Las páginas hijas son cortas y descriptivas: explican qué es la pieza y para qué sirve. Información de nivel comercial, la misma que hoy se da por teléfono. Sin planos, sin tolerancias y sin explicar cómo se fabrica.</p>
+    </div>
+  </div>
+</section>
+
+<!-- 08 INDUSTRIAS — TINT -->
+<section id="s8" class="tint">
+  <div class="wrap">
+    <div class="kicker">— 08 &nbsp;<b>PÁGINA MADRE: INDUSTRIAS</b></div>
+    <div class="split">
+      <h2>La puerta de entrada<br>de cada visitante.</h2>
+      <div>
+        <p class="lead">En vez de mostrar todas las piezas, se muestra a qué industrias se puede servir. El que entra reconoce su rubro y sabe en dos segundos si sirve.</p>
+      </div>
+    </div>
+    <div class="duo">
+      <div>
+        <div class="wf-cap">Página madre</div>
+        <div class="wf">
+          <div class="wf-head">Industrias <span>4 secciones</span></div>
+          <div class="wf-body">
+            <div class="blk"><div class="n">01</div><div><div class="t">Encabezado</div><div class="d">A qué industrias servimos.</div></div></div>
+            <div class="blk key"><div class="n">02</div><div><div class="t">Las industrias</div><div class="d">Una tarjeta por industria.</div></div></div>
+            <div class="blk"><div class="n">03</div><div><div class="t">Otros requerimientos</div><div class="d">Para los rubros que no están en la lista. Es la puerta a todo lo demás.</div></div></div>
+            <div class="blk key"><div class="n">04</div><div><div class="t">Cierre</div><div class="d">Solicitar cotización.</div></div></div>
+          </div>
+        </div>
+      </div>
+      <div>
+        <div class="wf-cap">Cada página de industria — una por rubro</div>
+        <div class="wf">
+          <div class="wf-head">Ej. Siderurgia <span>4 secciones</span></div>
+          <div class="wf-body">
+            <div class="blk key"><div class="n">01</div><div><div class="t">Título y definición</div><div class="d">Matricería para siderurgia, y qué se resuelve ahí.</div></div></div>
+            <div class="blk"><div class="n">02</div><div><div class="t">Requerimientos del sector</div><div class="d">Qué necesita esa industria y qué aporta VOGTSA. Dos párrafos cortos.</div></div></div>
+            <div class="blk"><div class="n">03</div><div><div class="t">Productos aplicables</div><div class="d">Accesos a las piezas que se usan en ese rubro.</div></div></div>
+            <div class="blk"><div class="n">04</div><div><div class="t">Servicios aplicables</div><div class="d">Accesos a los servicios de ese rubro.</div></div></div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="note">
+      <p>Igual que en Productos: <strong>el formulario de cotización va en la página madre.</strong> Las páginas de industria informan y llevan a los productos y servicios que le sirven a ese rubro.</p>
+    </div>
+  </div>
+</section>
+
+<!-- 09 SERVICIOS -->
+<section id="s9">
+  <div class="wrap">
+    <div class="kicker">— 09 &nbsp;<b>PÁGINA MADRE: SERVICIOS</b></div>
+    <div class="split">
+      <h2>Reparación va primera<br>y va <em>más grande</em>.</h2>
+      <div>
+        <p class="lead">Es lo que ninguna competencia hace: los competidores importan y venden la pieza terminada, pero no reparan. Por eso Reparación tiene su propia página y no es un renglón dentro de una lista.</p>
+      </div>
+    </div>
+    <div class="duo">
+      <div>
+        <div class="wf-cap">Página madre</div>
+        <div class="wf">
+          <div class="wf-head">Servicios <span>4 secciones</span></div>
+          <div class="wf-body">
+            <div class="blk"><div class="n">01</div><div><div class="t">Encabezado</div><div class="d">Servicios técnicos.</div></div></div>
+            <div class="blk key"><div class="n">02</div><div><div class="t">Los 4 servicios</div><div class="d">Reparación · Rectificación y pulido · Análisis de falla · Corte por hilo.</div></div></div>
+            <div class="blk"><div class="n">03</div><div><div class="t">Asesoramiento</div><div class="d">Análisis de vida útil y de falla.</div></div></div>
+            <div class="blk key"><div class="n">04</div><div><div class="t">Cierre</div><div class="d">Consulta directa: acá manda la urgencia.</div></div></div>
+          </div>
+        </div>
+        <div class="note">
+          <p><strong>Corte por hilo tiene página propia:</strong> es capacidad disponible y no hace falta ser de la industria siderúrgica ni usar carburo para encargarlo. Es la página que puede traer trabajo de donde no se lo espera.</p>
+        </div>
+      </div>
+      <div>
+        <div class="wf-cap">Reparación de matrices — la página de más valor</div>
+        <div class="wf">
+          <div class="wf-head">Reparación de matrices <span>4 secciones + 1 idea</span></div>
+          <div class="wf-body">
+            <div class="blk key"><div class="n">01</div><div><div class="t">Encabezado</div><div class="d">Una matriz desgastada no siempre debe reemplazarse. Le habla a la urgencia del que entra.</div></div></div>
+            <div class="blk key"><div class="n">02</div><div><div class="t">Reparamos piezas de cualquier origen</div><div class="d">Incluso importadas de China, Suiza o Alemania. Es el diferencial más fuerte de la empresa.</div></div></div>
+            <div class="blk idea"><div class="n">—</div><div><div class="t">Antes y después <span class="pill">idea a probar</span></div><div class="d">Una sola imagen con un control que se arrastra con el mouse: al correrlo hacia un lado se ve la matriz gastada, hacia el otro la misma pieza reparada.</div></div></div>
+            <div class="blk"><div class="n">03</div><div><div class="t">¿Reparar o reponer?</div><div class="d">Criterios generales. Los ubica como asesores, no como vendedores.</div></div></div>
+            <div class="blk key"><div class="n">04</div><div><div class="t">Cierre</div><div class="d">Consulta directa.</div></div></div>
+          </div>
+        </div>
+        <div class="note amber">
+          <p><strong>El antes y después es una idea, no una sección confirmada.</strong> Es lo más persuasivo que puede tener esta página y no dice una sola palabra técnica: se ve y se entiende. Necesita una foto de una matriz gastada y otra de la misma pieza reparada. Con una imagen de referencia podemos probar de generarlas y mostrarles cómo queda antes de decidir si va.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- 10 REPRESENTACIONES — TINT -->
+<section id="s10" class="tint">
+  <div class="wrap">
+    <div class="kicker">— 10 &nbsp;<b>PÁGINA: REPRESENTACIONES</b></div>
+    <div class="split">
+      <h2>No es una lista de logos.<br>Es un <em>circuito</em>.</h2>
+      <div>
+        <p class="lead">Las cuatro marcas del exterior cumplen la función que en otras webs cumplen los logos de clientes: son las que le dan peso a la empresa.</p>
+      </div>
+    </div>
+    <div class="duo">
+      <div>
+        <div class="wf">
+          <div class="wf-head">Representaciones <span>6 secciones</span></div>
+          <div class="wf-body">
+            <div class="blk"><div class="n">01</div><div><div class="t">Encabezado</div><div class="d">Representantes exclusivos en Argentina de Velo, Loba, Pressure Welding y Esteves.</div></div></div>
+            <div class="blk"><div class="n">02</div><div><div class="t">Las 4 marcas</div><div class="d">Los logos, con acceso a la web de cada marca. Sin detalle técnico.</div></div></div>
+            <div class="blk key"><div class="n">03</div><div><div class="t">Canal oficial en Argentina</div><div class="d">El canal que las propias marcas reconocen y al que derivan las consultas.</div></div></div>
+            <div class="blk"><div class="n">04</div><div><div class="t">Ventajas de operar por VOGTSA</div><div class="d">Soporte local, stock, asesoramiento en español, sin gestión de importación.</div></div></div>
+            <div class="blk key"><div class="n">05</div><div><div class="t">El circuito completo</div><div class="d">La pieza nueva se compra por VOGTSA y esa misma pieza vuelve a VOGTSA a rectificar.</div></div></div>
+            <div class="blk key"><div class="n">06</div><div><div class="t">Cierre</div><div class="d">Consultar disponibilidad.</div></div></div>
+          </div>
+        </div>
+      </div>
+      <div>
+        <div class="wf-cap">Por qué esta página importa más de lo que parece</div>
+        <p>Como no publicamos a quién le venden, <strong>son las marcas del exterior las que respaldan a la empresa</strong>. Es la prueba que sí se puede mostrar.</p>
+        <hr class="sep">
+        <p><strong>Y el circuito no lo puede copiar nadie:</strong> la pieza nueva se compra por VOGTSA y después vuelve a VOGTSA a rectificarse. Representación y servicio son el mismo negocio. Contado así, la página deja de ser una vidriera de terceros y pasa a explicar por qué conviene comprar acá.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- 11 TRABAJÁ + CONTACTO -->
+<section id="s11">
+  <div class="wrap">
+    <div class="kicker">— 11 &nbsp;<b>PÁGINAS: TRABAJÁ CON NOSOTROS Y CONTACTO</b></div>
+    <div class="split">
+      <h2>Las dos páginas<br>que cierran el sitio.</h2>
+      <div>
+        <p class="lead">Una mira hacia adentro y la otra hacia afuera. Las dos son cortas y directas.</p>
+      </div>
+    </div>
+    <div class="duo">
+      <div>
+        <div class="wf">
+          <div class="wf-head">Trabajá con nosotros <span>5 secciones</span></div>
+          <div class="wf-body">
+            <div class="blk"><div class="n">01</div><div><div class="t">Encabezado</div><div class="d">Un oficio que se transmite en planta.</div></div></div>
+            <div class="blk"><div class="n">02</div><div><div class="t">Cómo se trabaja en VOGTSA</div><div class="d">Empresa familiar, oficio de precisión, formación interna.</div></div></div>
+            <div class="blk"><div class="n">03</div><div><div class="t">Perfiles que buscamos</div><div class="d">Si no hay búsquedas abiertas, va como búsqueda permanente.</div></div></div>
+            <div class="blk key"><div class="n">04</div><div><div class="t">Envío de antecedentes</div><div class="d">Formulario con adjuntar CV.</div></div></div>
+            <div class="blk"><div class="n">05</div><div><div class="t">LinkedIn</div><div class="d">Acceso al perfil de la empresa.</div></div></div>
+          </div>
+        </div>
+        <div class="note">
+          <p>Va en el pie de página y no en el menú principal: existe y se encuentra, pero no compite con el objetivo comercial.</p>
+        </div>
+      </div>
+      <div>
+        <div class="wf">
+          <div class="wf-head">Contacto <span>5 secciones</span></div>
+          <div class="wf-body">
+            <div class="blk"><div class="n">01</div><div><div class="t">Encabezado</div><div class="d">Consultas y cotizaciones.</div></div></div>
+            <div class="blk key"><div class="n">02</div><div><div class="t">Formulario</div><div class="d">Nombre, apellido, empresa, email, tipo de consulta, mensaje y adjuntar plano.</div></div></div>
+            <div class="blk key"><div class="n">03</div><div><div class="t">Contacto directo</div><div class="d">Consulta rápida, mail y teléfono.</div></div></div>
+            <div class="blk"><div class="n">04</div><div><div class="t">Ubicación</div><div class="d">Maldonado 335, Remedios de Escalada, con mapa.</div></div></div>
+            <div class="blk"><div class="n">05</div><div><div class="t">Horario de atención</div><div class="d">—</div></div></div>
+          </div>
+        </div>
+        <div class="note">
+          <p><strong>El formulario permite adjuntar el plano.</strong> Es el camino más corto entre alguien que necesita una pieza y una cotización, y evita el ida y vuelta de mails. El archivo llega directo al correo de la empresa.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- 12 OPCIÓN ESENCIAL -->
+<section id="s12">
+  <div class="wrap">
+    <div class="kicker">— 12 &nbsp;<b>UNA ALTERNATIVA MÁS CHICA</b></div>
+    <div class="split">
+      <h2>La misma web,<br>en <em>siete páginas</em>.</h2>
+      <div>
+        <p class="lead">Todo lo anterior es la propuesta completa. Existe también una versión reducida, donde cada página madre se queda con sus temas adentro en vez de abrirlos en páginas separadas.</p>
+      </div>
+    </div>
+    <table class="cmp">
+      <tr>
+        <th style="width:24%"></th>
+        <th class="pick" style="width:38%">Completa — la propuesta</th>
+        <th style="width:38%">Esencial — la alternativa</th>
+      </tr>
+      <tr>
+        <td>Páginas</td>
+        <td class="pick">24 en español + 24 en inglés</td>
+        <td>7 en español + 7 en inglés</td>
+      </tr>
+      <tr>
+        <td>Productos</td>
+        <td class="pick">Una página por cada categoría</td>
+        <td>Una sola página con las 8 categorías adentro</td>
+      </tr>
+      <tr>
+        <td>Industrias</td>
+        <td class="pick">Una página por industria</td>
+        <td>Una sola página con las industrias adentro</td>
+      </tr>
+      <tr>
+        <td>Servicios</td>
+        <td class="pick">Una página por servicio</td>
+        <td>Una sola página con los 4 adentro</td>
+      </tr>
+      <tr>
+        <td>Trabajá con nosotros</td>
+        <td class="pick">Página propia</td>
+        <td>Una sección dentro de Nosotros</td>
+      </tr>
+    </table>
+    <div class="notes2">
+      <div class="note">
+        <p><strong>Las dos opciones son sitios completos y bien hechos.</strong> La diferencia no es la calidad: es la cantidad de puertas de entrada. Cada página tiene su propia dirección y su propio título, y eso es lo que un buscador usa para mostrar un resultado. Con más páginas hay más temas por los que aparecer; con menos páginas, menos.</p>
+      </div>
+      <div class="note amber">
+        <p><strong>Ninguna de las dos garantiza aparecer primero, y es importante decirlo.</strong> Aparecer arriba en Google o ser mencionado por la inteligencia artificial depende de muchas cosas además de la web: la antigüedad del dominio, el movimiento en LinkedIn, la ficha de Google, lo que publican otros sitios sobre la empresa y la competencia de cada búsqueda. Es un trabajo largo y sostenido, no un resultado del día del lanzamiento.<br><br>La estructura es la parte que sí controlamos, y es la que habilita el resto: sin una página propia sobre un tema, es muy difícil aparecer por ese tema. Pero tener la página no alcanza por sí sola para aparecer primero.</p>
+      </div>
+    </div>
+    <p style="margin-top:26px;">Las dos opciones están cotizadas por separado en el presupuesto. No hay una correcta: depende de con qué convenga arrancar.</p>
+  </div>
+</section>
+
+<!-- 13 CIERRE — VERDE -->
+<section id="s13" class="green">
+  <div class="wrap">
+    <div class="kicker">— 13 &nbsp;<b>PRÓXIMO PASO</b></div>
+    <div class="split">
+      <h2>Esto se termina de definir<br><em>en conjunto</em>.</h2>
+      <div>
+        <p class="lead">Este documento es el primer bosquejo salido de la reunión. Sirve para ver cómo quedaría organizada la web y para discutirlo antes de que se escriba una línea de código.</p>
+        <p>Lo que sigue: revisarlo con calma, marcar lo que no cierre y agregar lo que falte. Sobre lo que quede aprobado se define el diseño visual, se escriben los textos y se arma el sitio.</p>
+      </div>
+    </div>
+    <div class="cta">
+      <div class="note">
+        <p>Si algo de acá no representa lo que buscan, o si aparece una sección que pasamos por alto, lo comentan y lo ajustamos. <strong>Nada de esto está cerrado.</strong></p>
+      </div>
+      <div class="btns">
+        <a href="https://drive.google.com/drive/folders/1gIDxTg2wm_q8NY11xQrhBfyXbolUEEZ4?usp=sharing" target="_blank" rel="noopener" class="btn primary">Abrir carpeta de Drive</a>
+        <!-- TODO: reemplazar "#" por el link real del presupuesto cuando esté subido -->
+        <a href="#" class="btn">Ver presupuesto</a>
+      </div>
+      <p class="foot-meta" style="margin-top:44px;">Agencia Chamán · VOGTSA · Documento de trabajo</p>
+    </div>
+  </div>
+</section>
+
+<script>
+  var lenis = null;
+  if (window.Lenis) {
+    lenis = new Lenis({ duration:1.1, smoothWheel:true });
+    function raf(t){ lenis.raf(t); requestAnimationFrame(raf); }
+    requestAnimationFrame(raf);
+    if (window.ScrollTrigger) lenis.on('scroll', ScrollTrigger.update);
+  }
+  function goTo(target){
+    if (lenis) lenis.scrollTo(target, { offset:0, duration:1.2 });
+    else if (typeof target === 'number') window.scrollTo({ top:target, behavior:'smooth' });
+    else document.querySelector(target).scrollIntoView({ behavior:'smooth' });
+  }
+
+  // Menú
+  var burger = document.getElementById('burger');
+  var menuBack = document.getElementById('menuBack');
+  function closeMenu(){ document.body.classList.remove('menu-open'); burger.setAttribute('aria-expanded','false'); }
+  burger.addEventListener('click', function(){
+    var open = document.body.classList.toggle('menu-open');
+    burger.setAttribute('aria-expanded', open ? 'true' : 'false');
+  });
+  menuBack.addEventListener('click', closeMenu);
+  document.addEventListener('keydown', function(e){ if (e.key === 'Escape') closeMenu(); });
+  document.querySelectorAll('#menu a').forEach(function(a){
+    a.addEventListener('click', function(e){
+      e.preventDefault();
+      closeMenu();
+      setTimeout(function(){ goTo(a.getAttribute('href')); }, 120);
+    });
+  });
+
+  // Volver al inicio + anillo de progreso de lectura
+  var totop = document.getElementById('totop');
+  var ringFill = document.getElementById('ringFill');
+  var CIRC = 2 * Math.PI * 25.5;
+  ringFill.style.strokeDasharray = CIRC;
+  ringFill.style.strokeDashoffset = CIRC;
+  totop.addEventListener('click', function(){ goTo(0); });
+  function onScroll(y){
+    totop.classList.toggle('on', y > 700);
+    var max = document.documentElement.scrollHeight - window.innerHeight;
+    var p = max > 0 ? Math.min(1, Math.max(0, y / max)) : 0;
+    ringFill.style.strokeDashoffset = CIRC * (1 - p);
+  }
+  if (lenis) lenis.on('scroll', function(e){ onScroll(e.scroll); });
+  else window.addEventListener('scroll', function(){ onScroll(window.scrollY); });
+
+  // Reveals
+  if (window.gsap && window.ScrollTrigger) {
+    gsap.registerPlugin(ScrollTrigger);
+    gsap.utils.toArray('section').forEach(function(sec){
+      var bits = sec.querySelectorAll('.kicker, h1, h2, .split > div, .note, .figs, .cards, .map, .map-legend, .navmock, .wf, table.cmp, .btns, .flow, .wf-cap, .foot-meta, section > .wrap > p');
+      gsap.set(bits, { opacity:0, y:22 });
+      ScrollTrigger.create({
+        trigger: sec, start:'top 72%', once:true,
+        onEnter:function(){ gsap.to(bits, { opacity:1, y:0, duration:.7, stagger:.04, ease:'power3.out' }); }
+      });
+    });
+  }
+</script>
+</body>
+</html>
